@@ -1,0 +1,41 @@
+# 한 줄씩 따라 해보는 파이토치 딥러닝 프로젝트 모음집
+# Transfer learning 버전
+
+import os
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import Dataset, DataLoader
+
+
+from torchvision import models
+from torchvision.transforms import transforms
+from torchvision.datasets import ImageFolder
+
+BATCH_SIZE = 256
+
+transform = transforms.Compose([
+    transforms.Resize((64, 64)),
+    transforms.ToTensor()
+])
+
+train_dataset = ImageFolder(root='./dataset/train/', transform=transform)
+valid_dataset = ImageFolder(root='./dataset/validtion/', transform=transform)
+test_dataset = ImageFolder(root='./dataset/test/', transform=transform)
+
+train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_worker=4)
+valid_loader = DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=True, num_worker=4)
+test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_worker=4)
+
+if torch.cuda.is_available():
+  DEVICE = torch.device('cuda')
+else:
+  DEVICE = torch.device('cpu')
+
+# Pretrained 모델
+
+model = models.resnet50(pretrained=True)
+model.fc = nn.Linear(model.fc.in_features, 15)  # num_ftrs = resnet.fc.in_features
+
+model = model.to(DEVICE)
